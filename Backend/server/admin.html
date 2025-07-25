@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - Novelty Verify</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #111;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      position: sticky;
+      top: 0;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .log-entry {
+      background: #fff;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-left: 5px solid #c0392b;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-radius: 4px;
+    }
+
+    .log-entry h4 {
+      margin: 0 0 8px 0;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .log-entry small {
+      color: #666;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>📋 Novelty Verify - Activity Logs</header>
+  <main id="log-container">
+    <p>Loading logs...</p>
+  </main>
+
+  <script>
+    async function loadLogs() {
+      const container = document.getElementById('log-container');
+      try {
+        const res = await fetch('/api/logs');
+        const logs = await res.json();
+
+        if (!Array.isArray(logs)) {
+          throw new Error("Unexpected response format");
+        }
+
+        container.innerHTML = '';
+        logs.forEach(log => {
+          const div = document.createElement('div');
+          div.className = 'log-entry';
+          div.innerHTML = `
+            <h4>🔍 Visited: ${log.domain}</h4>
+            <small><strong>User:</strong> ${log.user}</small>
+            <small><strong>Time:</strong> ${new Date(log.timestamp).toLocaleString()}</small>
+            <small><strong>User-Agent:</strong> ${log.userAgent}</small>
+          `;
+          container.appendChild(div);
+        });
+
+        if (logs.length === 0) {
+          container.innerHTML = '<p>No logs found.</p>';
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch logs:", err);
+        container.innerHTML = '<p class="error">❌ Failed to load logs from server.</p>';
+      }
+    }
+
+    loadLogs();
+    setInterval(loadLogs, 5000); // Refresh every 5 seconds
+  </script>
+</body>
+</html>
